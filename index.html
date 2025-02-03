@@ -11,10 +11,10 @@
       text-align: center;
     }
     .puzzle-cell {
-      background: #aa3e00;
+      background: #0073aa;
       color: white;
-      width: 50px; /* Fixed width */
-      height: 50px; /* Fixed height */
+      width: 50px;
+      height: 50px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -40,7 +40,7 @@
     }
     #game-grid {
       display: grid;
-      grid-template-columns: repeat(5, 50px); /* Fixed column width */
+      grid-template-columns: repeat(5, 50px);
       gap: 5px;
       margin: 20px auto;
       justify-content: center;
@@ -73,9 +73,7 @@
       let initialEmptyRow, initialEmptyCol;
       let shuffleMoves = [];
 
-      // Initialize a new shuffled game
       function initGame() {
-        // Create fresh solved grid
         grid = [];
         let num = 1;
         for (let i = 0; i < 5; i++) {
@@ -85,25 +83,20 @@
           }
           grid.push(row);
         }
-        
-        // Reset empty cell position
         emptyRow = 4;
         emptyCol = 4;
-        
-        // Shuffle and save initial state
         shuffleGrid();
         initialGrid = JSON.parse(JSON.stringify(grid));
         initialEmptyRow = emptyRow;
         initialEmptyCol = emptyCol;
-        renderGrid(true); // Hide numbers initially
+        renderGrid(true);
       }
 
       function shuffleGrid() {
         shuffleMoves = [];
         const directions = ['w', 's', 'a', 'd'];
         let validMoves = 0;
-
-        while (validMoves < 300) {
+        while (validMoves < 100) {
           const dir = directions[Math.floor(Math.random() * directions.length)];
           if (move(dir, true)) {
             shuffleMoves.push(dir);
@@ -112,16 +105,13 @@
         }
       }
 
-      // Move tiles (REVERSED DIRECTIONAL LOGIC)
       function move(dir, isShuffling = false) {
         let newRow = emptyRow;
         let newCol = emptyCol;
-
-        // Reverse directional logic
-        if (dir === 'w' && emptyRow < 4) newRow++; // Move tile below empty cell up
-        else if (dir === 's' && emptyRow > 0) newRow--; // Move tile above empty cell down
-        else if (dir === 'a' && emptyCol < 4) newCol++; // Move tile to the right of empty cell left
-        else if (dir === 'd' && emptyCol > 0) newCol--; // Move tile to the left of empty cell right
+        if (dir === 'w' && emptyRow < 4) newRow++;
+        else if (dir === 's' && emptyRow > 0) newRow--;
+        else if (dir === 'a' && emptyCol < 4) newCol++;
+        else if (dir === 'd' && emptyCol > 0) newCol--;
 
         if (newRow !== emptyRow || newCol !== emptyCol) {
           grid[emptyRow][emptyCol] = grid[newRow][newCol];
@@ -129,7 +119,9 @@
           emptyRow = newRow;
           emptyCol = newCol;
           renderGrid();
-          if (!isShuffling && checkWin()) {
+          
+          // Prevent win check during auto-sort
+          if (!isShuffling && checkWin() && !isAutoSorting) {
             clearInterval(timerInterval);
             alert(`Congratulations! You solved the puzzle in ${document.getElementById('game-timer').textContent}!`);
           }
@@ -138,7 +130,6 @@
         return false;
       }
 
-      // Render the grid (hide numbers on start screen)
       function renderGrid(hideNumbers = false) {
         const gridElement = document.getElementById('game-grid');
         gridElement.innerHTML = '';
@@ -146,7 +137,7 @@
           for (let j = 0; j < 5; j++) {
             const cell = document.createElement('div');
             cell.className = `puzzle-cell ${grid[i][j] === 0 ? 'empty' : ''}`;
-            cell.textContent = (hideNumbers && grid[i][j] !== 0) ? '' : grid[i][j]; // Hide numbers if hideNumbers is true
+            cell.textContent = (hideNumbers && grid[i][j] !== 0) ? '' : grid[i][j];
             gridElement.appendChild(cell);
           }
         }
@@ -178,6 +169,7 @@
         if (isAutoSorting) return;
         isAutoSorting = true;
         document.getElementById('auto-sort-btn').disabled = true;
+        document.getElementById('reset-btn').style.display = 'none';
 
         const solveSequence = [...shuffleMoves].reverse().map(move => {
           const reverseMoves = { 'w': 's', 's': 'w', 'a': 'd', 'd': 'a' };
@@ -190,6 +182,12 @@
             clearInterval(interval);
             isAutoSorting = false;
             document.getElementById('auto-sort-btn').disabled = false;
+            document.getElementById('reset-btn').style.display = 'inline-block';
+            
+            // Show completion alert only once at the end
+            if (checkWin()) {
+              alert(`Puzzle auto-solved in ${document.getElementById('game-timer').textContent}!`);
+            }
             return;
           }
           move(solveSequence[step]);
@@ -199,12 +197,11 @@
 
       function resetGame() {
         clearInterval(timerInterval);
-        initGame(); // Generate new puzzle
+        initGame();
         document.getElementById('game-timer').textContent = '00:00';
         document.getElementById('start-btn').style.display = 'inline-block';
         document.getElementById('auto-sort-btn').style.display = 'inline-block';
         document.getElementById('reset-btn').style.display = 'none';
-        renderGrid(true); // Hide numbers on reset
       }
 
       function startGame() {
@@ -213,7 +210,7 @@
         document.getElementById('start-btn').style.display = 'none';
         document.getElementById('auto-sort-btn').style.display = 'none';
         document.getElementById('reset-btn').style.display = 'inline-block';
-        renderGrid(); // Show numbers when game starts
+        renderGrid();
       }
 
       // Event listeners
@@ -233,7 +230,6 @@
         }
       });
 
-      // Initial game setup (hide numbers on start screen)
       initGame();
     });
   </script>
