@@ -11,7 +11,7 @@
       text-align: center;
     }
     .puzzle-cell {
-      background: #de5516;
+      background: #c73e04;
       color: white;
       width: 50px;
       height: 50px;
@@ -73,6 +73,7 @@
       let initialEmptyRow, initialEmptyCol;
       let shuffleMoves = [];
 
+      // Initialize a new shuffled game
       function initGame() {
         grid = [];
         let num = 1;
@@ -89,14 +90,15 @@
         initialGrid = JSON.parse(JSON.stringify(grid));
         initialEmptyRow = emptyRow;
         initialEmptyCol = emptyCol;
-        renderGrid(true);
+        renderGrid(true); // Hide numbers initially
       }
 
+      // Shuffle the grid
       function shuffleGrid() {
         shuffleMoves = [];
         const directions = ['w', 's', 'a', 'd'];
         let validMoves = 0;
-        while (validMoves < 300) {
+        while (validMoves < 250) {
           const dir = directions[Math.floor(Math.random() * directions.length)];
           if (move(dir, true)) {
             shuffleMoves.push(dir);
@@ -105,13 +107,14 @@
         }
       }
 
+      // Move tiles (REVERSED DIRECTIONAL LOGIC)
       function move(dir, isShuffling = false) {
         let newRow = emptyRow;
         let newCol = emptyCol;
-        if (dir === 'w' && emptyRow < 4) newRow++;
-        else if (dir === 's' && emptyRow > 0) newRow--;
-        else if (dir === 'a' && emptyCol < 4) newCol++;
-        else if (dir === 'd' && emptyCol > 0) newCol--;
+        if (dir === 'w' && emptyRow < 4) newRow++; // Move tile below empty cell up
+        else if (dir === 's' && emptyRow > 0) newRow--; // Move tile above empty cell down
+        else if (dir === 'a' && emptyCol < 4) newCol++; // Move tile to the right of empty cell left
+        else if (dir === 'd' && emptyCol > 0) newCol--; // Move tile to the left of empty cell right
 
         if (newRow !== emptyRow || newCol !== emptyCol) {
           grid[emptyRow][emptyCol] = grid[newRow][newCol];
@@ -130,6 +133,7 @@
         return false;
       }
 
+      // Render the grid (hide numbers on start screen)
       function renderGrid(hideNumbers = false) {
         const gridElement = document.getElementById('game-grid');
         gridElement.innerHTML = '';
@@ -143,6 +147,7 @@
         }
       }
 
+      // Check if the puzzle is solved
       function checkWin() {
         let num = 1;
         for (let i = 0; i < 5; i++) {
@@ -157,6 +162,7 @@
         return true;
       }
 
+      // Update the timer
       function updateTimer() {
         const elapsed = Math.floor((Date.now() - startTime) / 1000);
         const mins = Math.floor(elapsed / 60);
@@ -165,6 +171,7 @@
           `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
       }
 
+      // Auto-sort the puzzle
       function autoSort() {
         if (isAutoSorting) return;
         isAutoSorting = true;
@@ -184,7 +191,8 @@
             document.getElementById('auto-sort-btn').disabled = false;
             document.getElementById('reset-btn').style.display = 'inline-block';
             
-            // Show completion alert only once at the end
+            // Stop timer and show completion alert
+            clearInterval(timerInterval);
             if (checkWin()) {
               alert(`Puzzle auto-solved in ${document.getElementById('game-timer').textContent}!`);
             }
@@ -195,22 +203,24 @@
         }, 200);
       }
 
+      // Reset the game
       function resetGame() {
-        clearInterval(timerInterval);
-        initGame();
-        document.getElementById('game-timer').textContent = '00:00';
+        clearInterval(timerInterval); // Stop timer
+        initGame(); // Generate new puzzle
+        document.getElementById('game-timer').textContent = '00:00'; // Reset timer display
         document.getElementById('start-btn').style.display = 'inline-block';
         document.getElementById('auto-sort-btn').style.display = 'inline-block';
         document.getElementById('reset-btn').style.display = 'none';
       }
 
+      // Start the game
       function startGame() {
         startTime = Date.now();
         timerInterval = setInterval(updateTimer, 1000);
         document.getElementById('start-btn').style.display = 'none';
         document.getElementById('auto-sort-btn').style.display = 'none';
         document.getElementById('reset-btn').style.display = 'inline-block';
-        renderGrid();
+        renderGrid(); // Show numbers when game starts
       }
 
       // Event listeners
@@ -230,6 +240,7 @@
         }
       });
 
+      // Initial game setup
       initGame();
     });
   </script>
