@@ -103,7 +103,7 @@
         const directions = ['w', 's', 'a', 'd'];
         let validMoves = 0;
 
-        while (validMoves < 100) {
+        while (validMoves < 300) {
           const dir = directions[Math.floor(Math.random() * directions.length)];
           if (move(dir, true)) {
             shuffleMoves.push(dir);
